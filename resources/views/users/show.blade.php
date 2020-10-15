@@ -26,7 +26,7 @@
             </ul>
             @if (Auth::id() == $user->id)
                 {{-- 投稿フォーム --}}
-                @include('microposts.from')
+                @include('microposts.form')
                 {{-- 投稿一覧--}}
                 @include('microposts.microposts')
             @endif
