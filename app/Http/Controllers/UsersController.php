@@ -60,6 +60,8 @@ class UsersController extends Controller
         //idの値でユーザを検索して取得
         $user = User::findOrFail($id);
         
+        
+        
         //関係するモデルの件数をロード
         $user->loadRelationshipCounts();
         
@@ -71,6 +73,25 @@ class UsersController extends Controller
         return view('users.followers',
         ['user' => $user,
         'users' => $followers,
+        ]);
+    }
+    
+    //ユーザのお気に入り一覧を表示するアクション
+    public function favorite_list($id){
+        //idの値でユーザを検索して取得
+        $user = User::findOrFail($id);
+        
+        //関係するモデルの件数をロード
+        $user->loadRelationshipCounts();
+        
+        //ユーザのお気に入り一覧を取得
+        $favorite = $user->favorite()->paginate(10);
+        
+        //一覧をビューで表示する
+        return view(
+            'users.favorites',[
+            'user' => $user,
+            'favorites' => $favorites
         ]);
     }
 }

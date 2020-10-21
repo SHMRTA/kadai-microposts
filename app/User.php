@@ -40,6 +40,7 @@ class User extends Authenticatable
     
     //$userIdで指定されたユーザをフォローする
     public function follow($userId){
+        //logger($userId);
         //すでにフォローしているかの確認
         $exist = $this->is_following($userId);
         
@@ -59,12 +60,14 @@ class User extends Authenticatable
     //$userIdで指定されたユーザをアンフォローする
     public function unfollow($userId){
         //すでにフォローしているかの確認
+        
         $exist = $this->is_following($userId);
         
         //相手が自分自身かどうかの確認
         $its_me = $this->id == $userId;
         
         if($exist && !$its_me){
+           
             //すでにフォローしていればフォローを外す
             $this->followings()->detach($userId);
             return true;
@@ -78,6 +81,7 @@ class User extends Authenticatable
     //フォロー中であればtrueを返す
     
     public function is_following($userId){
+        
         //フォロー中ユーザの中に$userIdのものが存在するか
         return $this->followings()->where('follow_id',$userId)->exists();
     }
@@ -86,7 +90,7 @@ class User extends Authenticatable
     //このユーザとフォロー中ユーザの投稿に絞り込む
     public function feed_microposts(){
         
-        //このじゅーざがフォロー中のユーザのidを取得して配列にする
+        //このユーザがフォロー中のユーザのidを取得して配列にする
         $userIds = $this->followings()->pluck('users.id')->toArray();
         //このユーザのidもその配列に追加
         $userIds[] = $this->id;
@@ -120,8 +124,64 @@ class User extends Authenticatable
     
     //このユーザに関係するモデルの件数をロードする
     public function loadRelationshipCounts(){
-        $this->loadCount(['microposts','followings','followers']);
-        logger($this);
+        $this->loadCount(['microposts','followings','followers','favorites']);
+        
         
     }
+    
+    
+    
+    
+   //この投稿が所有するお気に入り (micropostsモデルとの関係を定義)
+    public function favorites(){
+        return $this->belongsToMany(Micropost::class,'favorites','user_id','microposts_id')->withTimestamps();
+       // logger($this);
+    }
+    
+    public function favorite($favoritesId){
+        //既にお気に入り登録しているか確認
+        $exist = $this->is_favorite($favoritesId);
+        //お気に入りが自分自身そのものかどうかの確認
+        $its_me = $this->id == $favoritesId;
+        
+        if($exist || $its_me){
+            //既に登録されていたら何もしない
+            return false;
+        }else{
+            //未登録ならば登録する
+            $this->favorites()->attach($favoritesId);
+            return true;
+        }
+    }
+    
+     public function unfavorite($favoritesId){
+        //既にお気に入り登録しているか確認
+        $exist = $this->is_favorite($favoritesId);
+        //お気に入りが自分自身そのものかどうかの確認
+        $its_me = $this->id == $favoritesId;
+        
+        if($exist &&  !$its_me){
+            //既に登録されていたらお気に入りを解除する
+            $this->favorites()->detach($favoritesId);
+            return true;
+            
+        }else{
+            //未登録ならばなにもしない;
+            return false;
+        }
+    }
+    
+    public function is_favorite($favoritesId){
+        //お気に入り登録してあるものの中に$favoritesIdの物が存在するか
+        return $this->favorites()->where('microposts_id',$favoritesId)->exists();
+    }
+    
+    
+    
+    
+    
+    
+    
+   
+   
 }
