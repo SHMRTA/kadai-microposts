@@ -40,7 +40,7 @@ class User extends Authenticatable
     
     //$userIdで指定されたユーザをフォローする
     public function follow($userId){
-        //logger($userId);
+        
         //すでにフォローしているかの確認
         $exist = $this->is_following($userId);
         
@@ -92,8 +92,10 @@ class User extends Authenticatable
         
         //このユーザがフォロー中のユーザのidを取得して配列にする
         $userIds = $this->followings()->pluck('users.id')->toArray();
+        
         //このユーザのidもその配列に追加
         $userIds[] = $this->id;
+        
         //それらのユーザが所有する投稿に絞り込む
         return Micropost::whereIn('user_id',$userIds);
     }
@@ -108,7 +110,6 @@ class User extends Authenticatable
     
     public function followings(){
            
-            //logger($this);
         return $this->belongsToMany(User::class,'user_follow','user_id','follow_id')->withTimestamps();
         
     }
@@ -138,31 +139,36 @@ class User extends Authenticatable
        // logger($this);
     }
     
-    public function favorite($favoritesId){
-        //既にお気に入り登録しているか確認
-        $exist = $this->is_favorite($favoritesId);
-        //お気に入りが自分自身そのものかどうかの確認
-        $its_me = $this->id == $favoritesId;
+    //お気に入りに入れる動作
+    public  function favorite($micropostId){
         
-        if($exist || $its_me){
+        //既にお気に入り登録しているか確認
+        $exist = $this->is_favorite($micropostId);
+        
+        if($exist){
+            
             //既に登録されていたら何もしない
             return false;
         }else{
+            
             //未登録ならば登録する
-            $this->favorites()->attach($favoritesId);
+            $this->favorites()->attach($micropostId);
             return true;
         }
     }
     
-     public function unfavorite($favoritesId){
+    //お気に入りから外す動作
+     public function unfavorite($micropostId){
+         
         //既にお気に入り登録しているか確認
-        $exist = $this->is_favorite($favoritesId);
-        //お気に入りが自分自身そのものかどうかの確認
-        $its_me = $this->id == $favoritesId;
+        $exist = $this->is_favorite($micropostId);
         
-        if($exist &&  !$its_me){
+        if($exist){
+            
             //既に登録されていたらお気に入りを解除する
-            $this->favorites()->detach($favoritesId);
+            $this->favorites()->detach($micropostId);
+            
+            
             return true;
             
         }else{
@@ -171,17 +177,10 @@ class User extends Authenticatable
         }
     }
     
-    public function is_favorite($favoritesId){
+    public function is_favorite($micropostId){
+        
         //お気に入り登録してあるものの中に$favoritesIdの物が存在するか
-        return $this->favorites()->where('microposts_id',$favoritesId)->exists();
+        return $this->favorites()->where('microposts_id',$micropostId)->exists();
     }
-    
-    
-    
-    
-    
-    
-    
-   
    
 }

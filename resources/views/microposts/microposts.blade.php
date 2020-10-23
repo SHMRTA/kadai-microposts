@@ -1,6 +1,7 @@
-@if (count($microposts ?? '') > 0)
+@if (count($microposts) > 0)
+    {{-- ログイン後に表示するページ --}}
     <ul class="list-unstyled">
-        @foreach ($microposts ?? ''  as $micropost)
+        @foreach ($microposts as $micropost)
             <li class="media mb-3">
                 {{-- 投稿の所有者のメールアドレスをもとにGravatarを取得して表示 --}}
                 <img class="mr-2 rounded" src="{{ Gravatar::get($micropost->user->email,['size' => 50])}}" alt="">
@@ -14,18 +15,43 @@
                         {{-- 投稿内容 --}}
                         <p class="mb-0">{!! nl2br(e($micropost->content)) !!}</p>
                     </div>
+                    
+                    <div>
+                        {{-- お気に入り登録ボタンのフォーム --}}
+                        
+                            @if (Auth::id() == $user->id)
+                                @if ($user->is_favorite($micropost->id))
+                                {!! Form::open(['route' => ['favorites.unfavorite', $micropost->id], 'method' => 'delete']) !!}
+                                    {!! Form::submit('UnFavorite', ['class' => 'btn btn-success btn-sm']) !!}
+                                {!! Form::close() !!}
+                             
+                                @else
+                                
+                                
+                                
+                                {!! Form::open(['route' => ['favorites.favorite', $micropost->id], 'method' => 'post']) !!}
+                                    {!! Form::submit('Favorite', ['class' => 'btn btn-light btn-sm']) !!}
+                                {!! Form::close() !!}
+                                @endif    
+                                
+                             @endif    
+                        
+                    </div>
+                    
                     <div>
                         @if (Auth::id() == $micropost->user_id)
+                        
                             {{-- 投稿削除ボタンのフォーム --}}
                             {!! Form::open(['route' => ['microposts.destroy', $micropost->id], 'method' => 'delete']) !!}
                                 {!! Form::submit('Delete', ['class' => 'btn btn-danger btn-sm']) !!}
                             {!! Form::close() !!}
                         @endif
                     </div>
+        
                 </div>
             </li>
         @endforeach
     </ul>
     {{-- ページネーションのリンク --}}
-    {{ $microposts ?? '' ?? '' ?? ''->links() }}
+    {{ $microposts->links() }}
 @endif

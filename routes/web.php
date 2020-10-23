@@ -18,7 +18,8 @@ Route::get('/', 'MicropostsController@index');
 //Route::get('/', 'MicropostsController@index');
 
 // ユーザ登録
-Route::get('signup', 'Auth\RegisterController@showRegistrationForm')->name('signup.get');
+Route::get('signup', 'Auth\RegisterController@
+')->name('signup.get');
 Route::post('signup', 'Auth\RegisterController@register')->name('signup.post');
 
 //認証
@@ -33,6 +34,8 @@ Route::group(['middleware' => ['auth']],function(){
         Route::delete('unfollow','UserFollowController@destroy')->name('user.unfollow');
         Route::get('followings','UsersController@followings')->name('users.followings');
         Route::get('followers','UsersController@followers')->name('users.followers');
+        
+        Route::get('favorites', 'UsersController@favorite_list')->name('users.favorites');    // 追加
     });
     
     

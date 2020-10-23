@@ -4,11 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-use App\User;   //追加
+use App\Micropost;   //追加
+use App\User;       //追加
 
 class UsersController extends Controller
 {
-    //
+    //viewに共有するデータを取りまとめ
+    public function initialization(){
+        View::share('$microposts','$users');
+    }
+    
+    
     public function index(){
         //ユーザー一覧を降順で取得
         $users = User::orderBy('id','desc')->paginate(10);
@@ -48,7 +54,7 @@ class UsersController extends Controller
         $followings = $user->followings()->paginate(10);
         
          
-        //フォロー一覧びゅーでそれらを表示
+        //フォロー一覧ビューでそれらを表示
         return view('users.followings',
         ['user' => $user,
         'users' => $followings,
@@ -69,7 +75,7 @@ class UsersController extends Controller
         $followers = $user->followers()->paginate(10);
         
          
-        //フォロー一覧びゅーでそれらを表示
+        //フォロー一覧ビューでそれらを表示
         return view('users.followers',
         ['user' => $user,
         'users' => $followers,
@@ -85,13 +91,13 @@ class UsersController extends Controller
         $user->loadRelationshipCounts();
         
         //ユーザのお気に入り一覧を取得
-        $favorite = $user->favorite()->paginate(10);
+        $favorite = $user->favorites()->paginate(10);
         
         //一覧をビューで表示する
         return view(
-            'users.favorites',[
+            'users.favorite',[
             'user' => $user,
-            'favorites' => $favorites
+            'favorite' => $favorite
         ]);
     }
 }
